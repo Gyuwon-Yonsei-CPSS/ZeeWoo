@@ -3,6 +3,10 @@
 
 **지우개: AI 기반 파일 삭제 및 Artifact 제거 솔루션을 통한 개인정보 보호 서비스**
 
+# 🧹 ZeeWoo Eraser Software (Beta)
+
+🚧 **Currently in Beta**: ZeeWoo Eraser is in its testing phase with basic file deletion functionality. Future updates will bring more features and improvements! Stay tuned for enhanced capabilities.
+
 
 # 🧹 ZeeWoo Eraser Software
 
