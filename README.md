@@ -39,7 +39,7 @@ ZeeWoo is a powerful file deletion tool designed to securely delete office docum
 
 ## 📂 Key Files
 
-
+```
 📦 core
  ┣ 📜 artifact_parser.py  # Artifact parsing class
  ┣ 📜 file_manager.py     # File and artifact deletion manager
@@ -59,12 +59,12 @@ Run the Program
 python main.py
 or
 dist/지우개.exe
+```
 
-
-⚠️ Notes
+## ⚠️ Notes
 If you wish to preserve the $UsnJournal, you can modify the logic in artifact_parser.py to exclude the $UsnJournal from deletion.
 Be aware that once files and artifacts are deleted, they may not be recoverable.
 
 
-📧 Contact
+## 📧 Contact
 For any questions or bug reports, feel free to reach out via email.
