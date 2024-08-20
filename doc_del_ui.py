@@ -146,8 +146,9 @@ class DocDelWindow(QMainWindow):
         for file_path in self.selected_files:
             self.log_text_edit.append(f"파일 삭제 시도 중: {file_path}")
             try:
-                delete_file_completely(file_path)  # document_delete.py의 함수 호출
-                self.log_text_edit.append(f"성공적으로 삭제됨: {file_path}")
+                messages = delete_file_completely(file_path)  # document_delete.py의 함수 호출
+                for message in messages:
+                    self.log_text_edit.append(message)
             except Exception as e:
                 self.log_text_edit.append(f"파일 삭제 실패: {file_path}, 오류: {str(e)}")
 

@@ -8,7 +8,7 @@ import glob
 '''
 확장자 시그니처 헤더, 푸터 영역을 제거해 카빙(복구)가 어렵도록 만들고, 파일 삭제 시 최근 
 '''
-
+message = []
 
 def replace_signature(file_path, header_signatures):
     '''각 확장자의 시그니처 헤더, 푸터를 삭제하여 카빙을 할 수 없도록 하는 함수'''
@@ -27,9 +27,9 @@ def secure_delete_file(filepath):
     '''os.remove()를 이용해 파일을 삭제하는 함수'''
     try:
         os.remove(filepath)
-        print(f"파일이 삭제되었습니다: {filepath}")
+        message.append(f"파일이 삭제되었습니다: {filepath}")
     except subprocess.CalledProcessError as e:
-        print(f"파일 삭제에 실패했습니다: {filepath}, Error: {e}")
+        message.append(f"파일 삭제에 실패했습니다: {filepath}, Error: {e}")
 
 
 def pidl_to_path(pidl):
@@ -48,9 +48,9 @@ def delete_registry_value(key, name, key_path, data):
     '''레지스트리 값을 삭제하는 함수'''
     try:
         winreg.DeleteValue(key, name)
-        print(f"레지스트리 삭제 성공: {key_path} - {name}, Value: {data}")
+        message.append(f"레지스트리 삭제 성공: {key_path} - {name}, Value: {data}")
     except OSError as e:
-        print(
+        message.append(
             f"레지스트리를 삭제하지 못했습니다: {key_path} - {name}, Error: {e}")
 
 
@@ -60,7 +60,7 @@ def read_and_delete_pidl_mru(key_path, target_filename):
         key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
                              key_path, 0, winreg.KEY_ALL_ACCESS)
     except OSError:
-        print(f"레지스트리 키 '{key_path}'를 열 수 없습니다.")
+        message.append(f"레지스트리 키 '{key_path}'를 열 수 없습니다.")
         return
 
     target_filename = ntpath.basename(target_filename)
@@ -126,12 +126,12 @@ def delete_recent_link_file(file_path):
         for link_file in link_files:
             try:
                 os.remove(link_file)
-                print(f"최근 문서 경로에서 .lnk 파일 삭제 성공: {link_file}")
+                message.append(f"최근 문서 경로에서 .lnk 파일 삭제 성공: {link_file}")
                 deleted_any = True
             except OSError as e:
-                print(f".lnk 파일 삭제 중 오류 발생: {e}")
+                message.append(f".lnk 파일 삭제 중 오류 발생: {e}")
         if not deleted_any:
-            print("삭제할 .lnk 파일이 없습니다.")
+            message.append("삭제할 .lnk 파일이 없습니다.")
 
 
 def delete_file_completely(file_path):
@@ -159,7 +159,9 @@ def delete_file_completely(file_path):
         secure_delete_file(file_path)
         delete_recent_link_file(file_path)
     else:
-        print(f"파일이 존재하지 않습니다: {file_path}")
+        message.append(f"파일이 존재하지 않습니다: {file_path}")
+    
+    return message
 
 
 # 사용 예제
