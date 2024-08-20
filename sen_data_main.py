@@ -1,5 +1,11 @@
-from PyQt5.QtWidgets import QMainWindow, QLabel, QPushButton, QWidget, QVBoxLayout
-from PyQt5.QtGui import QPixmap
+import sys
+from pathlib import Path
+from PyQt5.QtWidgets import QMainWindow, QLabel, QPushButton, QApplication
+from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5.QtCore import Qt
+from img_detect import ImageScanScreen  # img_detect.py의 ImageScanScreen 클래스
+from doc_detect import DocumentScanScreen  # doc_detect.py의 DocumentScanScreen 클래스
+
 
 class SenDataMainWindow(QMainWindow):
     def __init__(self):
@@ -21,8 +27,7 @@ class SenDataMainWindow(QMainWindow):
         delete_button_x = 480
         delete_button_y = 530
 
-        # 첫 번째 버튼 (Browse)
-        browse_pixmap = QPixmap("ui/img/doc_data.png")
+        # 첫 번째 버튼 (Browse - doc_data.png)
         browse_button_width = 300
         browse_button_height = 95
         self.browse_button = QPushButton(self)
@@ -35,10 +40,9 @@ class SenDataMainWindow(QMainWindow):
             }}
         """)
         self.browse_button.move(browse_button_x, browse_button_y)
-        self.browse_button.clicked.connect(self.do_nothing)  # 기본 동작 설정
+        self.browse_button.clicked.connect(self.open_doc_detect)
 
-        # 두 번째 버튼 (Delete)
-        delete_pixmap = QPixmap("ui/img/image_data.png")
+        # 두 번째 버튼 (Delete - image_data.png)
         delete_button_width = 310
         delete_button_height = 95
         self.delete_button = QPushButton(self)
@@ -51,8 +55,21 @@ class SenDataMainWindow(QMainWindow):
             }}
         """)
         self.delete_button.move(delete_button_x, delete_button_y)
-        self.delete_button.clicked.connect(self.do_nothing)  # 기본 동작 설정
+        self.delete_button.clicked.connect(self.open_img_detect)
 
-    def do_nothing(self):
-        # 이 메서드는 아무 작업도 하지 않음
-        pass
+    def open_doc_detect(self):
+        # doc_detect.py의 DocumentScanScreen 창 열기
+        self.doc_window = DocumentScanScreen()
+        self.doc_window.show()
+
+    def open_img_detect(self):
+        # img_detect.py의 ImageScanScreen 창 열기
+        self.img_window = ImageScanScreen()
+        self.img_window.show()
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    main_window = SenDataMainWindow()
+    main_window.show()
+    sys.exit(app.exec_())
