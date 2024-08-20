@@ -4,11 +4,12 @@ import os
 import ntpath
 import subprocess
 import glob
+import time
+import datetime
+from pytz import timezone
 
-'''
-확장자 시그니처 헤더, 푸터 영역을 제거해 카빙(복구)가 어렵도록 만들고, 파일 삭제 시 최근 
-'''
 message = []
+
 
 def replace_signature(file_path, header_signatures):
     '''각 확장자의 시그니처 헤더, 푸터를 삭제하여 카빙을 할 수 없도록 하는 함수'''
@@ -23,13 +24,14 @@ def replace_signature(file_path, header_signatures):
         file.truncate()
 
 
-def secure_delete_file(filepath):
-    '''os.remove()를 이용해 파일을 삭제하는 함수'''
+def get_file_modification_time(file_path):
+    '''파일의 마지막 수정 시간을 반환하는 함수'''
     try:
-        os.remove(filepath)
-        message.append(f"파일이 삭제되었습니다: {filepath}")
-    except subprocess.CalledProcessError as e:
-        message.append(f"파일 삭제에 실패했습니다: {filepath}, Error: {e}")
+        mod_time = os.path.getmtime(file_path)
+        return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(mod_time))
+    except Exception as e:
+        message.append(f"파일 수정 시간 추출 실패: {file_path}, Error: {e}")
+        return "N/A"
 
 
 def pidl_to_path(pidl):
@@ -42,16 +44,43 @@ def pidl_to_path(pidl):
         return buf.value
     else:
         return None
+    
+def secure_delete_file(filepath):
+    '''os.remove()를 이용해 파일을 삭제하는 함수'''
+    try:
+        mod_time = get_file_modification_time(filepath)
+        os.remove(filepath)
+        message.append(f"파일이 삭제되었습니다: {filepath} (마지막 수정 시간: {mod_time})")
+    except subprocess.CalledProcessError as e:
+        message.append(f"파일 삭제에 실패했습니다: {filepath}, Error: {e}")
+
+
+def get_registry_modification_time(key_path):
+    '''레지스트리 키의 마지막 수정 시간을 반환하는 함수'''
+    try:
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                             key_path, 0, winreg.KEY_READ)
+        # last_modified is the 3rd item in the tuple
+        last_modified = winreg.QueryInfoKey(key)[2]
+        in_seconds = last_modified / 10000000
+        dt = datetime.datetime(
+            1601, 1, 1) + datetime.timedelta(seconds=in_seconds) + datetime.timedelta(hours = 9)
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
+        #return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(last_modified))
+    except OSError as e:
+        message.append(f"레지스트리 수정 시간 추출 실패: {key_path}, Error: {e}")
+        return "N/A"
 
 
 def delete_registry_value(key, name, key_path, data):
     '''레지스트리 값을 삭제하는 함수'''
     try:
         winreg.DeleteValue(key, name)
-        message.append(f"레지스트리 삭제 성공: {key_path} - {name}, Value: {data}")
-    except OSError as e:
+        last_modified = get_registry_modification_time(key_path)
         message.append(
-            f"레지스트리를 삭제하지 못했습니다: {key_path} - {name}, Error: {e}")
+            f"레지스트리 삭제 성공: {key_path} - {name}, Value: {data} (마지막 수정 시간: {last_modified})")
+    except OSError as e:
+        message.append(f"레지스트리를 삭제하지 못했습니다: {key_path} - {name}, Error: {e}")
 
 
 def read_and_delete_pidl_mru(key_path, target_filename):
@@ -125,8 +154,10 @@ def delete_recent_link_file(file_path):
         deleted_any = False
         for link_file in link_files:
             try:
+                mod_time = get_file_modification_time(link_file)
                 os.remove(link_file)
-                message.append(f"최근 문서 경로에서 .lnk 파일 삭제 성공: {link_file}")
+                message.append(
+                    f"최근 문서 경로에서 .lnk 파일 삭제 성공: {link_file} (마지막 수정 시간: {mod_time})")
                 deleted_any = True
             except OSError as e:
                 message.append(f".lnk 파일 삭제 중 오류 발생: {e}")
@@ -160,9 +191,8 @@ def delete_file_completely(file_path):
         delete_recent_link_file(file_path)
     else:
         message.append(f"파일이 존재하지 않습니다: {file_path}")
-    
+
     return message
 
-
 # 사용 예제
-#delete_file_completely("C:\\Users\\Locava\\Documents\\newTest.pdf")
+# delete_file_completely("C:\\Users\\Locava\\Documents\\newTest.pdf")
