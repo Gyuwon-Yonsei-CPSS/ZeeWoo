@@ -40,12 +40,9 @@ class MainWindow(QMainWindow):
         self.background_label.setGeometry(0, 0, 900, 706)
         self.background_label.setScaledContents(True)
 
+        # Browse button setup
         browse_button_x = 100
         browse_button_y = 530
-        delete_button_x = 440
-        delete_button_y = 530
-
-        browse_pixmap = QPixmap("ui/img/doc_del_button.png")
         browse_button_width = 290
         browse_button_height = 90
         self.browse_button = QPushButton(self)
@@ -58,9 +55,11 @@ class MainWindow(QMainWindow):
             }}
         """)
         self.browse_button.move(browse_button_x, browse_button_y)
-        self.browse_button.clicked.connect(self.open_browse_window)
+        self.browse_button.clicked.connect(self.open_doc_del_ui_window)
 
-        delete_pixmap = QPixmap("ui/img/sen_data_detec.png")
+        # Delete button setup
+        delete_button_x = 440
+        delete_button_y = 530
         delete_button_width = 360
         delete_button_height = 90
         self.delete_button = QPushButton(self)
@@ -79,14 +78,13 @@ class MainWindow(QMainWindow):
         self.browse_window = BrowseWindow()
         self.browse_window.show()
 
-    def open_delete_window(self):
-        self.delete_window = DeleteWindow()
-        self.delete_window.show()
+    def open_doc_del_ui_window(self):
+        doc_del_ui = importlib.import_module('doc_del_ui')
+        self.doc_del_ui_window = doc_del_ui.DocDelUiWindow()
+        self.doc_del_ui_window.show()
 
     def open_sen_data_main_window(self):
-        # 동적으로 sen_data_main 모듈을 로드
         sen_data_main = importlib.import_module('sen_data_main')
-        # SenDataMainWindow 클래스를 사용하여 창을 생성하고 표시
         self.sen_data_main_window = sen_data_main.SenDataMainWindow()
         self.sen_data_main_window.show()
 
