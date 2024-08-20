@@ -1,0 +1,6 @@
+# dataset.yaml 파일
+train: D:/ZeeWoo_software/data/train/images  # 학습 이미지 경로
+val: D:/ZeeWoo_software/data/val/images      # 검증 이미지 경로
+
+nc: 1  # 클래스 개수 (ID 카드만 있으므로 1)
+names: ['id_card']  # 클래스 이름
