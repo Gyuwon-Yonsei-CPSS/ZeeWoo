@@ -115,8 +115,8 @@ def read_and_delete_pidl_mru(key_path, target_filename):
 def delete_recent_link_file(file_path):
     '''최근 문서 목록 바로가기 파일을 삭제하는 함수'''
     recent_folders = [
-        r"C:\Users\Locava\AppData\Roaming\Microsoft\Windows\Recent",
-        r"C:\Users\Locava\AppData\Roaming\Microsoft\Office\Recent"
+        os.path.expandvars(r"%APPDATA%\Microsoft\Windows\Recent"),
+        os.path.expandvars(r"%APPDATA%\Microsoft\Office\Recent")
     ]
     file_name = os.path.basename(file_path)
     for recent_folder in recent_folders:
