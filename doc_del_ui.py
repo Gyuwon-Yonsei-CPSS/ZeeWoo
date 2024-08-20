@@ -1,6 +1,12 @@
+import sys
+import os
 from PyQt5.QtWidgets import QMainWindow, QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QFileDialog, QTextEdit, QSpacerItem, QSizePolicy
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtCore import Qt
+
+# document_delete.py의 함수 임포트
+from document_delete import delete_file_completely
+
 
 class DocDelWindow(QMainWindow):
     def __init__(self):
@@ -132,12 +138,23 @@ class DocDelWindow(QMainWindow):
             self.file_info_text_edit.append(f"{file_path}\n{file_name}")
 
     def do_delete(self):
-        # '지우기 시작' 버튼에 대한 동작 로직 추가
-        pass
+        # '지우기 시작' 버튼에 대한 동작: 선택된 파일들 삭제
+        if not self.selected_files:
+            self.log_text_edit.append("선택된 파일이 없습니다.")
+            return
+
+        for file_path in self.selected_files:
+            self.log_text_edit.append(f"파일 삭제 시도 중: {file_path}")
+            try:
+                delete_file_completely(file_path)  # document_delete.py의 함수 호출
+                self.log_text_edit.append(f"성공적으로 삭제됨: {file_path}")
+            except Exception as e:
+                self.log_text_edit.append(f"파일 삭제 실패: {file_path}, 오류: {str(e)}")
 
     def reset_log(self):
-        # '로그 초기화' 버튼에 대한 동작 로직 추가
+        # '로그 초기화' 버튼에 대한 동작
         self.log_text_edit.clear()
+
 
 if __name__ == "__main__":
     from PyQt5.QtWidgets import QApplication

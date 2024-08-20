@@ -163,4 +163,4 @@ def delete_file_completely(file_path):
 
 
 # 사용 예제
-delete_file_completely("C:\\Users\\Locava\\Documents\\newTest.pdf")
+#delete_file_completely("C:\\Users\\Locava\\Documents\\newTest.pdf")

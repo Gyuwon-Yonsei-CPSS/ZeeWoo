@@ -4,6 +4,7 @@ from PyQt5.QtGui import QPixmap
 from doc_del_ui import DocDelWindow  # DocDelWindow로 변경
 from sen_data_main import SenDataMainWindow  # sen_data_main에서 SenDataMainWindow 직접 가져오기
 
+
 class BrowseWindow(QWidget):
     def __init__(self):
         super(BrowseWindow, self).__init__()
