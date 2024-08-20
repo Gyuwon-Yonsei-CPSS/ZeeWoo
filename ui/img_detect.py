@@ -2,9 +2,9 @@ import sys
 import os
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, 
-    QFileDialog, QTextEdit, QFrame, QProgressBar, QSpacerItem, QSizePolicy
+    QFileDialog, QTextEdit, QFrame, QProgressBar, QSizePolicy
 )
-from PyQt5.QtGui import QPixmap, QMovie, QPalette, QColor, QFont
+from PyQt5.QtGui import QPixmap, QMovie, QPalette, QColor, QFont, QIcon
 from PyQt5.QtCore import Qt, QTimer
 
 class MainScreen(QWidget):
@@ -19,8 +19,11 @@ class MainScreen(QWidget):
         layout = QVBoxLayout()
 
         # Create a button to open the image scan screen
-        self.scan_button = QPushButton('스캔하기')
+        self.scan_button = QPushButton()
         self.scan_button.setFixedSize(200, 75)  # 버튼 크기 조정
+        self.scan_button.setStyleSheet("background: transparent;")  # Make button background transparent
+        self.scan_button.setIcon(QIcon(r"C:\Users\dusdn\ZeeWoo\ui\img\scan.png"))  # Set button icon
+        self.scan_button.setIconSize(self.scan_button.size())  # Resize the icon to fit the button
         self.scan_button.setFont(QFont("Arial", 16, QFont.Bold))  # 글씨 크기 및 굵기 조정
         self.scan_button.clicked.connect(self.open_image_scan_screen)
         layout.addWidget(self.scan_button, alignment=Qt.AlignLeft)
@@ -49,14 +52,25 @@ class ImageScanScreen(QWidget):
         
         # Create main layout with fixed ratio 2:1
         main_layout = QHBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)  # Remove margins
 
         # Create a left layout for the scan button, image frame, and log area
         left_layout = QVBoxLayout()
         left_layout.setSpacing(0)  # Remove spacing between widgets
 
+        # Set background color for the left layout container
+        left_widget = QWidget()
+        left_widget.setStyleSheet("background-color: #FFFFE0;")  # Set background color
+        left_widget.setLayout(left_layout)
+        left_layout.setContentsMargins(0, 0, 0, 0)  # Remove margins
+        main_layout.addWidget(left_widget, stretch=2)
+
         # Create a button to scan images
-        self.scan_button = QPushButton('스캔하기')
+        self.scan_button = QPushButton()
         self.scan_button.setFixedSize(200, 75)  # 버튼 크기 조정
+        self.scan_button.setStyleSheet("background: transparent;")  # Make button background transparent
+        self.scan_button.setIcon(QIcon(r"C:\Users\dusdn\ZeeWoo\ui\img\scan.png"))  # Set button icon
+        self.scan_button.setIconSize(self.scan_button.size())  # Resize the icon to fit the button
         self.scan_button.setFont(QFont("Arial", 16, QFont.Bold))  # 글씨 크기 및 굵기 조정
         self.scan_button.clicked.connect(self.scan_images)
         left_layout.addWidget(self.scan_button, alignment=Qt.AlignLeft)
@@ -66,13 +80,14 @@ class ImageScanScreen(QWidget):
         self.image_frame.setFrameStyle(QFrame.Box | QFrame.Sunken)
         self.image_frame.setAlignment(Qt.AlignCenter)
         self.image_frame.setFixedSize(700, 400)  # 이미지 프레임 가로 700, 세로 400으로 설정
+        self.image_frame.setStyleSheet("background-color: white;")  # Set background color to white
         left_layout.addWidget(self.image_frame, alignment=Qt.AlignCenter)
 
         # Create a log area with "Yes/No" buttons appearing when an image is loaded
         self.log_area = QTextEdit()
         self.log_area.setFixedSize(700, 120)  # 로그창의 가로 길이 조정
         self.log_area.setReadOnly(True)
-        self.log_area.setStyleSheet("color: black; font-weight: normal;")  # Make log text black and normal weight
+        self.log_area.setStyleSheet("background-color: white; color: black; font-weight: normal;")  # Set background color to white
         left_layout.addWidget(self.log_area)
 
         # Yes/No buttons for image deletion confirmation
@@ -90,9 +105,6 @@ class ImageScanScreen(QWidget):
         button_layout.addWidget(self.yes_button)
         button_layout.addWidget(self.no_button)
         left_layout.addLayout(button_layout)
-
-        # Add left layout to the main layout
-        main_layout.addLayout(left_layout, stretch=2)
 
         # Create a vertical line for separation
         self.separator = QFrame()
@@ -112,31 +124,29 @@ class ImageScanScreen(QWidget):
         self.completion_image.setPixmap(completion_pixmap)
         self.completion_image.setAlignment(Qt.AlignCenter)
         self.completion_image.setVisible(False)
-        right_layout.addWidget(self.completion_image, alignment=Qt.AlignCenter)
+        right_layout.addWidget(self.completion_image, alignment=Qt.AlignBottom)  # Move image to the bottom
 
         # Create a label for the completion message
         self.completion_label = QLabel("완료되었습니다!", self)
         self.completion_label.setAlignment(Qt.AlignCenter)
         self.completion_label.setFont(QFont("Arial", 24, QFont.Bold))  # Bigger and bolder font
         self.completion_label.setVisible(False)
-        right_layout.addWidget(self.completion_label, alignment=Qt.AlignCenter)
+        right_layout.addWidget(self.completion_label, alignment=Qt.AlignTop)  # Move text to the top
 
         # Create a label to display the loading GIF
         self.loading_label = QLabel()
         self.loading_label.setAlignment(Qt.AlignCenter)
-        self.loading_label.setFixedSize(300, 300)  # Adjust GIF size (5 times larger)
+        self.loading_label.setFixedSize(300, 300)  # Adjust GIF size to not exceed separator
         right_layout.addWidget(self.loading_label, alignment=Qt.AlignCenter)
-
-        # Initially hide the loading label
-        self.loading_label.hide()
 
         # Create a progress bar
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)
         right_layout.addWidget(self.progress_bar)
 
-        # Initially hide the progress bar
+        # Initially hide the progress bar and loading label
         self.progress_bar.hide()
+        self.loading_label.hide()
 
         # Add right layout to the main layout
         main_layout.addLayout(right_layout, stretch=1)
@@ -170,7 +180,8 @@ class ImageScanScreen(QWidget):
         self.movie = QMovie(gif_path)
         
         # Set the GIF to the label and start the movie
-        self.movie.setScaledSize(self.loading_label.size())
+        gif_size = self.loading_label.size() * 1.5
+        self.movie.setScaledSize(gif_size)  # Directly use the QSize object
         self.loading_label.setMovie(self.movie)
         self.movie.start()
 
