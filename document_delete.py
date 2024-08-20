@@ -30,7 +30,7 @@ def get_file_modification_time(file_path):
         mod_time = os.path.getmtime(file_path)
         return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(mod_time))
     except Exception as e:
-        message.append(f"파일 수정 시간 추출 실패: {file_path}, Error: {e}")
+        message.append(f"파일 수정 시간 추출 실패: {file_path}, Error: {e}\n")
         return "N/A"
 
 
@@ -44,15 +44,17 @@ def pidl_to_path(pidl):
         return buf.value
     else:
         return None
-    
+
+
 def secure_delete_file(filepath):
     '''os.remove()를 이용해 파일을 삭제하는 함수'''
     try:
         mod_time = get_file_modification_time(filepath)
         os.remove(filepath)
-        message.append(f"파일이 삭제되었습니다: {filepath} (마지막 수정 시간: {mod_time})")
+        message.append(
+            f"{filepath}가 삭제되었습니다. (마지막 수정 시간: {mod_time})\n")
     except subprocess.CalledProcessError as e:
-        message.append(f"파일 삭제에 실패했습니다: {filepath}, Error: {e}")
+        message.append(f"{filepath} 삭제에 실패했습니다: , Error: {e}\n")
 
 
 def get_registry_modification_time(key_path):
@@ -64,11 +66,11 @@ def get_registry_modification_time(key_path):
         last_modified = winreg.QueryInfoKey(key)[2]
         in_seconds = last_modified / 10000000
         dt = datetime.datetime(
-            1601, 1, 1) + datetime.timedelta(seconds=in_seconds) + datetime.timedelta(hours = 9)
+            1601, 1, 1) + datetime.timedelta(seconds=in_seconds) + datetime.timedelta(hours=9)
         return dt.strftime("%Y-%m-%d %H:%M:%S")
-        #return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(last_modified))
+        # return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(last_modified))
     except OSError as e:
-        message.append(f"레지스트리 수정 시간 추출 실패: {key_path}, Error: {e}")
+        message.append(f"레지스트리 수정 시간 추출 실패: {key_path}, Error: {e}\n")
         return "N/A"
 
 
@@ -78,9 +80,9 @@ def delete_registry_value(key, name, key_path, data):
         winreg.DeleteValue(key, name)
         last_modified = get_registry_modification_time(key_path)
         message.append(
-            f"레지스트리 삭제 성공: {key_path} - {name}, Value: {data} (마지막 수정 시간: {last_modified})")
+            f"{key_path} - {name} 레지스트리의 {data}가 삭제되었습니다. (마지막 수정 시간: {last_modified})\n")
     except OSError as e:
-        message.append(f"레지스트리를 삭제하지 못했습니다: {key_path} - {name}, Error: {e}")
+        message.append(f"{key_path} - {name} 레지스트리를 삭제하지 못했습니다. Error: {e}\n")
 
 
 def read_and_delete_pidl_mru(key_path, target_filename):
@@ -157,12 +159,12 @@ def delete_recent_link_file(file_path):
                 mod_time = get_file_modification_time(link_file)
                 os.remove(link_file)
                 message.append(
-                    f"최근 문서 경로에서 .lnk 파일 삭제 성공: {link_file} (마지막 수정 시간: {mod_time})")
+                    f"{link_file}를 삭제했습니다. (마지막 수정 시간: {mod_time})\n")
                 deleted_any = True
             except OSError as e:
-                message.append(f".lnk 파일 삭제 중 오류 발생: {e}")
+                message.append(f".lnk 파일 삭제 중 오류 발생: {e}\n")
         if not deleted_any:
-            message.append("삭제할 .lnk 파일이 없습니다.")
+            message.append("삭제할 .lnk 파일이 없습니다.\n")
 
 
 def delete_file_completely(file_path):
@@ -190,7 +192,7 @@ def delete_file_completely(file_path):
         secure_delete_file(file_path)
         delete_recent_link_file(file_path)
     else:
-        message.append(f"파일이 존재하지 않습니다: {file_path}")
+        message.append(f"{file_path}가 존재하지 않습니다.\n")
 
     return message
 
