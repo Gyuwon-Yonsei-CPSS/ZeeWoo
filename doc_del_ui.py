@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QMainWindow, QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QFileDialog, QTextEdit, QSpacerItem, QSizePolicy
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtCore import Qt
 
 class DocDelWindow(QMainWindow):
@@ -9,11 +9,11 @@ class DocDelWindow(QMainWindow):
         self.setFixedSize(1100, 706)
         self.setWindowTitle("문서 삭제")
 
-        # 배경 이미지 설정
-        self.background_label = QLabel(self)
-        self.background_label.setPixmap(QPixmap("ui/img/mainscreen.png"))
-        self.background_label.setGeometry(0, 0, 1100, 706)
-        self.background_label.setScaledContents(True)
+        # 배경 색상을 흰색으로 설정
+        self.setAutoFillBackground(True)
+        palette = self.palette()
+        palette.setColor(QPalette.Window, QColor(Qt.white))
+        self.setPalette(palette)
 
         # 메인 위젯과 레이아웃 생성
         main_widget = QWidget(self)
@@ -37,6 +37,8 @@ class DocDelWindow(QMainWindow):
         self.file_info_text_edit = QTextEdit(self)
         self.file_info_text_edit.setReadOnly(True)
         self.file_info_text_edit.setFixedSize(500, 150)  # 높이를 조금 늘림
+        # 네모 상자 스타일 설정
+        self.file_info_text_edit.setStyleSheet("border: 2px solid black; padding: 10px;")
         top_layout.addWidget(self.file_info_text_edit, alignment=Qt.AlignLeft)
 
         # 상단 레이아웃을 좌측 레이아웃에 추가
@@ -52,6 +54,8 @@ class DocDelWindow(QMainWindow):
         self.log_text_edit = QTextEdit(self)
         self.log_text_edit.setReadOnly(True)
         self.log_text_edit.setFixedSize(500, 350)  # 파일 정보 텍스트와 같은 가로 길이로 설정
+        # 로그 창 스타일 설정: 검은 배경, 흰색 텍스트
+        self.log_text_edit.setStyleSheet("background-color: black; color: white; border: 2px solid black; padding: 10px;")
         log_layout.addWidget(self.log_text_edit, alignment=Qt.AlignLeft)
 
         left_layout.addLayout(log_layout)
@@ -67,7 +71,7 @@ class DocDelWindow(QMainWindow):
         self.info_label.setText("$UsnJournal을 보존하려면 artifact_parser.py의 로직을 수정하여 $UsnJournal을 삭제에서 제외할 수 있습니다. 파일과 아티팩트가 삭제되면 복구할 수 없을 수 있다는 점에 유의하세요.")
         self.info_label.setWordWrap(True)  # 텍스트가 여러 줄로 나뉘어 표시될 수 있도록 설정
         self.info_label.setFixedWidth(400)  # 안내 문구의 폭 설정
-        self.info_label.setStyleSheet("color: blue;")  # 파란색 텍스트 설정
+        self.info_label.setStyleSheet("color: blue; border: 2px solid black; padding: 10px;")  # 네모 상자 스타일 설정
         button_layout.addWidget(self.info_label, alignment=Qt.AlignLeft)
 
         # 스페이서를 추가해 버튼을 오른쪽으로 이동

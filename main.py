@@ -1,7 +1,8 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QWidget, QVBoxLayout
 from PyQt5.QtGui import QPixmap
-import importlib
+from doc_del_ui import DocDelWindow  # DocDelWindow로 변경
+from sen_data_main import SenDataMainWindow  # sen_data_main에서 SenDataMainWindow 직접 가져오기
 
 class BrowseWindow(QWidget):
     def __init__(self):
@@ -79,13 +80,13 @@ class MainWindow(QMainWindow):
         self.browse_window.show()
 
     def open_doc_del_ui_window(self):
-        doc_del_ui = importlib.import_module('doc_del_ui')
-        self.doc_del_ui_window = doc_del_ui.DocDelUiWindow()
+        # doc_del_ui.py의 DocDelWindow 클래스를 사용하여 새 창 열기
+        self.doc_del_ui_window = DocDelWindow()
         self.doc_del_ui_window.show()
 
     def open_sen_data_main_window(self):
-        sen_data_main = importlib.import_module('sen_data_main')
-        self.sen_data_main_window = sen_data_main.SenDataMainWindow()
+        # sen_data_main.py의 SenDataMainWindow 클래스를 사용하여 새 창 열기
+        self.sen_data_main_window = SenDataMainWindow()
         self.sen_data_main_window.show()
 
 if __name__ == "__main__":
