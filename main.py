@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton
 from PyQt5.QtGui import QPixmap
 from doc_del_ui import DocDelWindow  # DocDelWindow로 변경
-from img_detect import ImageScanScreen  # img_detect에서 ImageScanScreen 가져오기
+from img_detect import ImageScanAndScheduleScreen  # img_detect에서 ImageScanAndScheduleScreen 가져오기
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -55,8 +55,8 @@ class MainWindow(QMainWindow):
         self.doc_del_ui_window.show()
 
     def open_img_detect_window(self):
-        # img_detect.py의 ImageScanScreen 클래스를 사용하여 새 창 열기
-        self.img_detect_window = ImageScanScreen()
+        # img_detect.py의 ImageScanAndScheduleScreen 클래스를 사용하여 새 창 열기
+        self.img_detect_window = ImageScanAndScheduleScreen()
         self.img_detect_window.show()
 
 if __name__ == "__main__":
