@@ -1,19 +1,26 @@
 import sys
 import os
+import schedule
+import threading
+import time
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel,
-    QFileDialog, QTextEdit, QFrame, QProgressBar
+    QFileDialog, QTextEdit, QFrame, QProgressBar, QDateTimeEdit, QComboBox, QLineEdit, QDialog
 )
 from PyQt5.QtGui import QPixmap, QMovie, QPalette, QColor, QFont, QIcon
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt, QTimer, QDateTime
+from ultralytics import YOLO
+
+# YOLO 모델 로드
+model = YOLO('data/runs/detect/train4/weights/best.pt')
 
 
-class ImageScanScreen(QWidget):
+class ImageScanAndScheduleScreen(QWidget):
     def __init__(self):
         super().__init__()
 
-        # Set up the image scan screen
-        self.setWindowTitle('Image Scan Screen')
+        # Set up the main screen
+        self.setWindowTitle('Image Scan and File Deletion Scheduler')
         self.setFixedSize(1050, 700)  # 고정된 창 크기
 
         # Set white background
@@ -25,15 +32,18 @@ class ImageScanScreen(QWidget):
         main_layout = QHBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)  # 여백 제거
 
-        # 왼쪽 레이아웃: 스캔 버튼, 이미지 프레임, 로그 영역
+        # 왼쪽 레이아웃: 스캔 버튼, 스케줄링 버튼, 이미지 프레임, 로그 영역
         left_layout = QVBoxLayout()
         left_layout.setSpacing(0)  # 위젯 사이의 간격 제거
 
         # 왼쪽 컨테이너 설정
         left_widget = QWidget()
-        left_widget.setStyleSheet("background-color: #FFFFE0;")
+        left_widget.setStyleSheet("background-color: #FFFFE0;")  # 노란 배경
         left_widget.setLayout(left_layout)
         main_layout.addWidget(left_widget, stretch=2)
+
+        # 스캔 및 스케줄링 버튼을 포함할 버튼 레이아웃
+        button_layout = QHBoxLayout()
 
         # 이미지 스캔 버튼
         self.scan_button = QPushButton()
@@ -43,7 +53,19 @@ class ImageScanScreen(QWidget):
         self.scan_button.setIconSize(self.scan_button.size())
         self.scan_button.setFont(QFont("Arial", 16, QFont.Bold))
         self.scan_button.clicked.connect(self.scan_images)
-        left_layout.addWidget(self.scan_button, alignment=Qt.AlignLeft)
+        button_layout.addWidget(self.scan_button)
+
+        # 스케줄링 버튼 추가
+        self.schedule_button = QPushButton()
+        self.schedule_button.setFixedSize(200, 75)  # 스캔 버튼과 동일한 크기 설정
+        self.schedule_button.setStyleSheet("background: transparent;")  # 버튼 투명화
+        self.schedule_button.setIcon(QIcon(r"ui/img/schedule.png"))  # schedule.png 이미지 설정
+        self.schedule_button.setIconSize(self.schedule_button.size())
+        self.schedule_button.clicked.connect(self.open_scheduler_dialog)
+        button_layout.addWidget(self.schedule_button)
+
+        # 버튼 레이아웃을 왼쪽 레이아웃에 추가
+        left_layout.addLayout(button_layout)
 
         # 이미지 표시를 위한 큰 프레임
         self.image_frame = QLabel()
@@ -81,10 +103,10 @@ class ImageScanScreen(QWidget):
         self.separator.setFrameShape(QFrame.VLine)
         self.separator.setFrameShadow(QFrame.Sunken)
         self.separator.setLineWidth(1)
-        self.separator.setStyleSheet("background-color: lightgray;")
+        self.separator.setStyleSheet("background-color: lightgray;")  # 회색 선
         main_layout.addWidget(self.separator)
 
-        # 오른쪽 레이아웃: 로딩 GIF, 완료 이미지 및 텍스트
+        # 오른쪽 레이아웃: 로딩 GIF 및 완료 표시
         right_layout = QVBoxLayout()
         right_layout.setSpacing(0)
 
@@ -118,7 +140,7 @@ class ImageScanScreen(QWidget):
         self.progress_bar.hide()
         self.loading_label.hide()
 
-        # 오른쪽 레이아웃을 메인 레이아웃에 추가
+        # 레이아웃을 메인 레이아웃에 추가
         main_layout.addLayout(right_layout, stretch=1)
 
         # 메인 레이아웃 설정
@@ -191,9 +213,106 @@ class ImageScanScreen(QWidget):
         self.yes_button.setVisible(False)
         self.no_button.setVisible(False)
 
+    def open_scheduler_dialog(self):
+        # 스케줄 설정 창 열기
+        self.scheduler_dialog = SchedulerDialog(self)
+        self.scheduler_dialog.exec_()
+
+    def run_scheduler(self):
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+
+
+class SchedulerDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle('파일 삭제 스케줄링')
+        self.setGeometry(400, 400, 400, 200)
+
+        # Layout
+        layout = QVBoxLayout()
+
+        # 날짜 선택
+        self.date_time_edit = QDateTimeEdit(self)
+        self.date_time_edit.setDateTime(QDateTime.currentDateTime())
+        layout.addWidget(QLabel('삭제할 날짜와 시간 선택'))
+        layout.addWidget(self.date_time_edit)
+
+        # 주기 선택
+        self.cycle_combo = QComboBox(self)
+        self.cycle_combo.addItems(["매일", "매주", "매월"])
+        layout.addWidget(QLabel('주기 선택'))
+        layout.addWidget(self.cycle_combo)
+
+        # 파일 확장자 입력
+        self.file_extensions_edit = QLineEdit(self)
+        layout.addWidget(QLabel('삭제할 파일 확장자 (예: .pdf, .jpg)'))
+        layout.addWidget(self.file_extensions_edit)
+
+        # 디렉터리 선택 버튼
+        self.directory_button = QPushButton('디렉터리 선택', self)
+        self.directory_button.clicked.connect(self.select_directory)
+        layout.addWidget(self.directory_button)
+
+        # 디렉터리 표시
+        self.selected_directory = QLabel('선택된 디렉터리: 없음', self)
+        layout.addWidget(self.selected_directory)
+
+        # OK 버튼
+        self.ok_button = QPushButton('확인', self)
+        self.ok_button.clicked.connect(self.schedule_task)
+        layout.addWidget(self.ok_button)
+
+        self.setLayout(layout)
+
+    def select_directory(self):
+        directory = QFileDialog.getExistingDirectory(self, '디렉터리 선택')
+        if directory:
+            self.selected_directory.setText(f'선택된 디렉터리: {directory}')
+            self.directory_path = directory
+
+    def schedule_task(self):
+        selected_datetime = self.date_time_edit.dateTime().toPyDateTime()
+        cycle = self.cycle_combo.currentText()
+        extensions = self.file_extensions_edit.text().split(',')
+        directory = self.directory_path
+
+        # 주기에 맞춰 스케줄링
+        if cycle == "매일":
+            schedule.every().day.at(selected_datetime.strftime("%H:%M")).do(self.delete_files, directory, extensions)
+        elif cycle == "매주":
+            schedule.every().week.at(selected_datetime.strftime("%H:%M")).do(self.delete_files, directory, extensions)
+        elif cycle == "매월":
+            schedule.every().month.at(selected_datetime.strftime("%H:%M")).do(self.delete_files, directory, extensions)
+
+        # 스케줄 실행을 위한 스레드 시작
+        threading.Thread(target=self.run_scheduler, daemon=True).start()
+
+        # 창 닫기
+        self.accept()
+
+    def delete_files(self, directory, extensions):
+        # 파일 삭제 로직
+        print(f"Deleting files in {directory} with extensions: {', '.join(extensions)}")
+        for root, dirs, files in os.walk(directory):
+            for file in files:
+                if any(file.endswith(ext) for ext in extensions):
+                    file_path = os.path.join(root, file)
+                    try:
+                        os.remove(file_path)
+                        print(f"Deleted: {file_path}")
+                    except Exception as e:
+                        print(f"Failed to delete {file_path}: {e}")
+
+    def run_scheduler(self):
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    scan_screen = ImageScanScreen()
-    scan_screen.show()
+    screen = ImageScanAndScheduleScreen()
+    screen.show()
     sys.exit(app.exec_())

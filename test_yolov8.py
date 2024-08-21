@@ -23,13 +23,13 @@ for image_name in os.listdir(image_dir):
         total_images += 1  # 스캔한 이미지 수 증가
         image_path = os.path.join(image_dir, image_name)
         print(f"Processing {image_path}...")
-        
+
         # 이미지 읽기
         img = cv2.imread(image_path)
-        
+
         # 모델에 이미지 입력하여 탐지 실행
         results = model(img)
-        
+
         # 탐지된 바운딩 박스 개수 출력
         print(f"탐지된 바운딩 박스 개수: {len(results[0].boxes)}")
 
@@ -38,7 +38,7 @@ for image_name in os.listdir(image_dir):
             detected_images += 1  # 탐지된 이미지 수 증가
             detected_image_paths.append(image_path)  # 탐지된 이미지 경로 저장
             print(f"ID 카드 탐지됨: {image_path}")
-            
+
             # 탐지 결과를 시각화 및 저장 (results[0]에서 저장)
             results[0].save(output_dir)
             print(f"Saved results for {image_name} to {output_dir}")
